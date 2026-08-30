@@ -1,0 +1,5 @@
+impactctl
+bin/
+dist/
+*.out
+.DS_Store
