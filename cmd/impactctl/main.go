@@ -67,10 +67,17 @@ func printReport(r impact.Report) {
 	fmt.Printf("Changed services       %d\n", len(r.ChangedServices))
 	fmt.Printf("Contract services      %d\n", len(r.AffectedServices))
 	fmt.Printf("Downstream services    %d\n", len(r.DownstreamServices))
+	fmt.Printf("AsyncAPI changes       %d\n", len(r.AsyncAPIImpacts))
 	if len(r.Findings) > 0 {
 		fmt.Println("\nWhy")
 		for _, f := range r.Findings {
-			fmt.Printf("! %-12s %s\n", f.Category, f.Detail)
+			fmt.Printf("! %-14s %s\n", f.Category, f.Detail)
+		}
+	}
+	if len(r.AsyncAPIImpacts) > 0 {
+		fmt.Println("\nAsyncAPI impact")
+		for _, event := range r.AsyncAPIImpacts {
+			fmt.Printf("→ %-8s %-8s %-24s %s\n", event.Change, event.Kind, event.Name, event.Detail)
 		}
 	}
 	if len(r.ChangedServices) > 0 {
