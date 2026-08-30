@@ -117,6 +117,8 @@ The v0.1 workflow intentionally does **not** execute fork-supplied code with a w
 
 The v0.2 direction is deliberately composable: `impactctl` should own **change → service/system impact** while interoperating with specialist analyzers where they already provide deeper domain semantics.
 
+See the [v0.2 execution plan and release gate](docs/V0.2_EXECUTION.md) for sequencing and acceptance criteria. Public adoption signals are tracked separately in [traction](docs/TRACTION.md).
+
 ### v0.3 — system impact
 - [ ] Kubernetes workload relationships
 - [ ] Terraform resource ownership
