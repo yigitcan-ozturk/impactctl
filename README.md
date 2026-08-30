@@ -110,15 +110,15 @@ The v0.1 workflow intentionally does **not** execute fork-supplied code with a w
 
 ### v0.2 — service impact
 - [x] [service-map configuration](https://github.com/yigitcan-ozturk/impactctl/issues/8)
-- [ ] [API consumer/provider relationships](https://github.com/yigitcan-ozturk/impactctl/issues/9)
+- [x] [API consumer/provider relationships](https://github.com/yigitcan-ozturk/impactctl/issues/9)
 - [ ] [AsyncAPI event-schema impact](https://github.com/yigitcan-ozturk/impactctl/issues/10)
-- [ ] [dependency-aware downstream impact](https://github.com/yigitcan-ozturk/impactctl/issues/11)
+- [x] [dependency-aware downstream impact](https://github.com/yigitcan-ozturk/impactctl/issues/11)
 - [ ] [optional `oasdiff` semantic adapter](https://github.com/yigitcan-ozturk/impactctl/issues/12)
 - [ ] [real multi-service repository validation](https://github.com/yigitcan-ozturk/impactctl/issues/15)
 
 The v0.2 direction is deliberately composable: `impactctl` should own **change → service/system impact** while interoperating with specialist analyzers where they already provide deeper domain semantics.
 
-The first v0.2 configuration contract is documented in the [service-map schema](docs/SERVICE_MAP.md). See the [v0.2 execution plan and release gate](docs/V0.2_EXECUTION.md) for sequencing and acceptance criteria. Public adoption signals are tracked separately in [traction](docs/TRACTION.md).
+The v0.2 [service-map schema](docs/SERVICE_MAP.md) now covers path-to-service mapping, direct OpenAPI provider/consumer relationships and explicit dependency-aware downstream paths. See the [v0.2 execution plan and release gate](docs/V0.2_EXECUTION.md) for sequencing and acceptance criteria. Public adoption signals are tracked separately in [traction](docs/TRACTION.md).
 
 ### v0.3 — system impact
 - [ ] Kubernetes workload relationships

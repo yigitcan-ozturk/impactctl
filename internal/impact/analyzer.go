@@ -26,15 +26,25 @@ type ServiceImpact struct {
 	Owners      []string
 }
 
+type DependencyImpact struct {
+	Source      string
+	Name        string
+	Path        []string
+	Criticality string
+	Owners      []string
+}
+
 type Report struct {
-	Base             string
-	Head             string
-	Files            []string
-	Findings         []Finding
-	Owners           []string
-	AffectedServices []ServiceImpact
-	RiskScore        int
-	Risk             string
+	Base               string
+	Head               string
+	Files              []string
+	Findings           []Finding
+	Owners             []string
+	ChangedServices    []string
+	AffectedServices   []ServiceImpact
+	DownstreamServices []DependencyImpact
+	RiskScore          int
+	Risk               string
 }
 
 func Analyze(base, head string) (Report, error) {
@@ -51,11 +61,15 @@ func Analyze(base, head string) (Report, error) {
 	report := Report{Base: base, Head: head, Files: files}
 	owners := map[string]struct{}{}
 	serviceImpacts := map[string]ServiceImpact{}
+	changedServices := map[string]struct{}{}
 
 	for _, f := range files {
 		lower := strings.ToLower(f)
 		var openAPIImpacts []servicemap.OpenAPIImpact
 		if hasServiceMap {
+			for _, service := range serviceMap.ServicesForPath(f) {
+				changedServices[strings.TrimSpace(service.Name)] = struct{}{}
+			}
 			openAPIImpacts = serviceMap.OpenAPIImpactsForPath(f)
 		}
 
@@ -73,11 +87,33 @@ func Analyze(base, head string) (Report, error) {
 		}
 
 		for _, relationship := range openAPIImpacts {
+			changedServices[strings.TrimSpace(relationship.Provider.Name)] = struct{}{}
 			provider := newServiceImpact(relationship.Provider, "provider", f)
 			serviceImpacts[serviceImpactKey(provider)] = provider
 			for _, consumerService := range relationship.Consumers {
 				consumer := newServiceImpact(consumerService, "consumer", f)
 				serviceImpacts[serviceImpactKey(consumer)] = consumer
+			}
+		}
+	}
+
+	for service := range changedServices {
+		if service != "" {
+			report.ChangedServices = append(report.ChangedServices, service)
+		}
+	}
+	sort.Strings(report.ChangedServices)
+
+	if hasServiceMap && len(report.ChangedServices) > 0 {
+		for _, downstream := range serviceMap.DownstreamFrom(report.ChangedServices) {
+			impact := newDependencyImpact(downstream)
+			report.DownstreamServices = append(report.DownstreamServices, impact)
+			if impact.Criticality == "critical" {
+				report.Findings = append(report.Findings, Finding{
+					Category: "downstream",
+					Detail:   fmt.Sprintf("critical downstream service %s via %s", impact.Name, strings.Join(impact.Path, " -> ")),
+					Weight:   20,
+				})
 			}
 		}
 	}
@@ -134,10 +170,22 @@ func newServiceImpact(service servicemap.Service, role, contract string) Service
 	owners := append([]string(nil), service.Owners...)
 	sort.Strings(owners)
 	return ServiceImpact{
-		Name:        service.Name,
+		Name:        strings.TrimSpace(service.Name),
 		Role:        role,
 		Contract:    contract,
 		Criticality: strings.ToLower(strings.TrimSpace(service.Criticality)),
+		Owners:      owners,
+	}
+}
+
+func newDependencyImpact(impact servicemap.DownstreamImpact) DependencyImpact {
+	owners := append([]string(nil), impact.Service.Owners...)
+	sort.Strings(owners)
+	return DependencyImpact{
+		Source:      strings.TrimSpace(impact.Source.Name),
+		Name:        strings.TrimSpace(impact.Service.Name),
+		Path:        append([]string(nil), impact.Path...),
+		Criticality: strings.ToLower(strings.TrimSpace(impact.Service.Criticality)),
 		Owners:      owners,
 	}
 }

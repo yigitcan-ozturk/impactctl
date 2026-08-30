@@ -28,6 +28,7 @@ type Service struct {
 	Paths       []string          `yaml:"paths"`
 	Criticality string            `yaml:"criticality,omitempty"`
 	Owners      []string          `yaml:"owners,omitempty"`
+	DependsOn   []string          `yaml:"depends_on,omitempty"`
 	OpenAPI     []OpenAPIContract `yaml:"openapi,omitempty"`
 }
 
@@ -125,6 +126,24 @@ func (c Config) Validate() error {
 				return fmt.Errorf("service %q contains duplicate owner %q", name, owner)
 			}
 			seenOwners[owner] = struct{}{}
+		}
+
+		seenDependencies := map[string]struct{}{}
+		for _, dependency := range service.DependsOn {
+			dependency = strings.TrimSpace(dependency)
+			if dependency == "" {
+				return fmt.Errorf("service %q contains an empty dependency", name)
+			}
+			if dependency == name {
+				return fmt.Errorf("service %q cannot depend on itself", name)
+			}
+			if _, exists := names[dependency]; !exists {
+				return fmt.Errorf("service %q references unknown dependency %q", name, dependency)
+			}
+			if _, exists := seenDependencies[dependency]; exists {
+				return fmt.Errorf("service %q contains duplicate dependency %q", name, dependency)
+			}
+			seenDependencies[dependency] = struct{}{}
 		}
 
 		seenContracts := map[string]struct{}{}

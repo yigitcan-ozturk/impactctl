@@ -64,17 +64,38 @@ func printReport(r impact.Report) {
 	fmt.Printf("Changed files          %d\n", len(r.Files))
 	fmt.Printf("Findings               %d\n", len(r.Findings))
 	fmt.Printf("Owner teams            %d\n", len(r.Owners))
-	fmt.Printf("Affected services      %d\n", len(r.AffectedServices))
+	fmt.Printf("Changed services       %d\n", len(r.ChangedServices))
+	fmt.Printf("Contract services      %d\n", len(r.AffectedServices))
+	fmt.Printf("Downstream services    %d\n", len(r.DownstreamServices))
 	if len(r.Findings) > 0 {
 		fmt.Println("\nWhy")
 		for _, f := range r.Findings {
 			fmt.Printf("! %-12s %s\n", f.Category, f.Detail)
 		}
 	}
+	if len(r.ChangedServices) > 0 {
+		fmt.Println("\nChanged services")
+		for _, service := range r.ChangedServices {
+			fmt.Println("→", service)
+		}
+	}
 	if len(r.AffectedServices) > 0 {
-		fmt.Println("\nService impact")
+		fmt.Println("\nContract service impact")
 		for _, service := range r.AffectedServices {
 			fmt.Printf("→ %-8s %-20s via %s", service.Role, service.Name, service.Contract)
+			if service.Criticality != "" {
+				fmt.Printf(" [%s]", service.Criticality)
+			}
+			if len(service.Owners) > 0 {
+				fmt.Printf(" owners: %s", strings.Join(service.Owners, ", "))
+			}
+			fmt.Println()
+		}
+	}
+	if len(r.DownstreamServices) > 0 {
+		fmt.Println("\nDownstream impact")
+		for _, service := range r.DownstreamServices {
+			fmt.Printf("→ %-20s via %s", service.Name, strings.Join(service.Path, " -> "))
 			if service.Criticality != "" {
 				fmt.Printf(" [%s]", service.Criticality)
 			}
