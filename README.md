@@ -45,9 +45,9 @@ Suggested review
 - Terraform / Kubernetes / Helm / Docker changes
 - GitHub Actions and common CI changes
 - Runtime/configuration changes
-- `CODEOWNERS` review boundaries
+- `CODEOWNERS` review boundaries from `.github/CODEOWNERS`, `CODEOWNERS` or `docs/CODEOWNERS`
 - Deterministic `LOW / MEDIUM / HIGH / CRITICAL` risk classification
-- Human-readable and JSON output
+- Human-readable, JSON and GitHub-flavored Markdown output
 
 ## Install from source
 
@@ -64,6 +64,24 @@ go build -o impactctl ./cmd/impactctl
 ./impactctl pr --base main --head HEAD
 ```
 
+For machine-readable output:
+
+```bash
+./impactctl pr --base main --head HEAD --json
+```
+
+For a pull-request comment payload:
+
+```bash
+./impactctl pr --base main --head HEAD --markdown
+```
+
+## GitHub pull-request comments
+
+The included `PR Impact` workflow runs `impactctl` on same-repository pull requests and creates one bot comment containing the current risk level, findings and suggested owners. New pushes update the existing marked comment instead of creating duplicates.
+
+The v0.1 workflow intentionally does **not** execute fork-supplied code with a write-capable token. External-fork comment support can be added later with a separated trusted workflow pattern.
+
 ## Design principles
 
 - **Deterministic core** — the same repository state should produce the same result.
@@ -71,6 +89,7 @@ go build -o impactctl ./cmd/impactctl
 - **Local-first** — source code does not need to leave the developer environment.
 - **Fast adoption** — a single CLI should provide value before configuration is required.
 - **Extensible, not monolithic** — language and platform adapters can grow around a small core.
+- **Safe CI integration** — untrusted fork code should not receive write-capable workflow credentials.
 
 ## Roadmap
 
@@ -79,8 +98,9 @@ go build -o impactctl ./cmd/impactctl
 - [x] contract / migration / deployment / CI / config signals
 - [x] CODEOWNERS-aware review hints
 - [x] JSON output
-- [ ] GitHub Action PR comment
-- [ ] golden-fixture integration tests
+- [x] Markdown PR payload
+- [x] golden-fixture integration tests
+- [ ] GitHub Action PR comment validated on a live pull request
 
 ### v0.2 — service impact
 - [ ] service map configuration
