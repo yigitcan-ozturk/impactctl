@@ -57,10 +57,12 @@ func Analyze(base, head string) (Report, error) {
 		report.Findings = append(report.Findings, Finding{"scope", fmt.Sprintf("%d files changed", len(files)), 10})
 	}
 
-	if parsed, err := loadCodeowners("CODEOWNERS"); err == nil {
-		for _, f := range files {
-			for _, owner := range parsed.match(f) {
-				owners[owner] = struct{}{}
+	if codeownersPath, ok := discoverCodeowners("."); ok {
+		if parsed, err := loadCodeowners(codeownersPath); err == nil {
+			for _, f := range files {
+				for _, owner := range parsed.match(f) {
+					owners[owner] = struct{}{}
+				}
 			}
 		}
 	}
@@ -129,6 +131,21 @@ func isWorkflow(p string) bool {
 func isConfig(p string) bool {
 	b := filepath.Base(p)
 	return strings.HasSuffix(p, ".env") || strings.Contains(b, "config") || strings.HasSuffix(p, ".toml") || strings.HasSuffix(p, ".ini")
+}
+
+func discoverCodeowners(root string) (string, bool) {
+	candidates := []string{
+		filepath.Join(root, ".github", "CODEOWNERS"),
+		filepath.Join(root, "CODEOWNERS"),
+		filepath.Join(root, "docs", "CODEOWNERS"),
+	}
+	for _, candidate := range candidates {
+		info, err := os.Stat(candidate)
+		if err == nil && !info.IsDir() {
+			return candidate, true
+		}
+	}
+	return "", false
 }
 
 type codeowners []ownerRule
