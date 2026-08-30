@@ -43,6 +43,7 @@ type Report struct {
 	ChangedServices    []string
 	AffectedServices   []ServiceImpact
 	DownstreamServices []DependencyImpact
+	AsyncAPIImpacts    []AsyncAPIImpact
 	RiskScore          int
 	Risk               string
 }
@@ -73,7 +74,20 @@ func Analyze(base, head string) (Report, error) {
 			openAPIImpacts = serviceMap.OpenAPIImpactsForPath(f)
 		}
 
+		asyncImpacts, isAsync, err := analyzeAsyncAPI(base, head, f)
+		if err != nil {
+			return Report{}, err
+		}
+		if isAsync {
+			report.AsyncAPIImpacts = append(report.AsyncAPIImpacts, asyncImpacts...)
+			if len(asyncImpacts) > 0 {
+				report.Findings = append(report.Findings, asyncAPIFinding(f, asyncImpacts))
+			}
+		}
+
 		switch {
+		case isAsync:
+			// AsyncAPI findings are classified semantically above.
 		case isOpenAPI(lower) || len(openAPIImpacts) > 0:
 			report.Findings = append(report.Findings, Finding{"contract", f + " changes an API contract", 30})
 		case isMigration(lower):
@@ -96,6 +110,20 @@ func Analyze(base, head string) (Report, error) {
 			}
 		}
 	}
+
+	sort.Slice(report.AsyncAPIImpacts, func(i, j int) bool {
+		left, right := report.AsyncAPIImpacts[i], report.AsyncAPIImpacts[j]
+		if left.Path != right.Path {
+			return left.Path < right.Path
+		}
+		if asyncAPIChangeRank(left.Change) != asyncAPIChangeRank(right.Change) {
+			return asyncAPIChangeRank(left.Change) < asyncAPIChangeRank(right.Change)
+		}
+		if left.Kind != right.Kind {
+			return left.Kind < right.Kind
+		}
+		return left.Name < right.Name
+	})
 
 	for service := range changedServices {
 		if service != "" {
