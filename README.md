@@ -2,6 +2,8 @@
 
 **Know what your change can break — before you merge it.**
 
+[![CI](https://github.com/yigitcan-ozturk/impactctl/actions/workflows/ci.yml/badge.svg)](https://github.com/yigitcan-ozturk/impactctl/actions/workflows/ci.yml)
+
 `impactctl` is a deterministic change-impact CLI for pull requests. It turns a Git diff into a compact risk signal by inspecting technical contracts, database migrations, deployment/configuration changes, CI/CD files and repository ownership.
 
 > Early-stage open source. The v0.1 goal is intentionally narrow: make change impact visible in seconds, without requiring a hosted service or AI.
@@ -91,6 +93,10 @@ go build -o impactctl ./cmd/impactctl
 - [ ] Terraform resource ownership
 - [ ] cross-repository impact contracts
 - [ ] architecture boundary policies
+
+## Contributing
+
+Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the issues labeled `good first issue` or `help wanted` for scoped starting points.
 
 ## Status
 
