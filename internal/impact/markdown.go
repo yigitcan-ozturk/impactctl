@@ -11,12 +11,21 @@ func RenderMarkdown(r Report) string {
 	var b strings.Builder
 	fmt.Fprintln(&b, commentMarker)
 	fmt.Fprintf(&b, "## impactctl — %s IMPACT (%d/100)\n\n", r.Risk, r.RiskScore)
-	fmt.Fprintf(&b, "| Signal | Count |\n| --- | ---: |\n| Changed files | %d |\n| Findings | %d |\n| Owner teams | %d |\n| Changed services | %d |\n| Contract services | %d |\n| Downstream services | %d |\n", len(r.Files), len(r.Findings), len(r.Owners), len(r.ChangedServices), len(r.AffectedServices), len(r.DownstreamServices))
+	fmt.Fprintf(&b, "| Signal | Count |\n| --- | ---: |\n| Changed files | %d |\n| Findings | %d |\n| Owner teams | %d |\n| Changed services | %d |\n| Contract services | %d |\n| Downstream services | %d |\n| AsyncAPI changes | %d |\n", len(r.Files), len(r.Findings), len(r.Owners), len(r.ChangedServices), len(r.AffectedServices), len(r.DownstreamServices), len(r.AsyncAPIImpacts))
 
 	if len(r.Findings) > 0 {
 		fmt.Fprintln(&b, "\n### Why")
 		for _, finding := range r.Findings {
 			fmt.Fprintf(&b, "- **%s** — %s\n", finding.Category, finding.Detail)
+		}
+	}
+
+	if len(r.AsyncAPIImpacts) > 0 {
+		fmt.Fprintln(&b, "\n### AsyncAPI impact")
+		fmt.Fprintln(&b, "| Change | Kind | Name | Evidence |")
+		fmt.Fprintln(&b, "| --- | --- | --- | --- |")
+		for _, event := range r.AsyncAPIImpacts {
+			fmt.Fprintf(&b, "| **%s** | %s | `%s` | %s |\n", event.Change, event.Kind, event.Name, event.Detail)
 		}
 	}
 
