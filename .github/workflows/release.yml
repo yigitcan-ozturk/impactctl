@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Verify source
+        run: |
+          go test ./...
+          go vet ./...
+
+      - name: Build release archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${{ github.event.release.tag_name }}"
+          mkdir -p dist work
+
+          build_archive() {
+            goos="$1"
+            goarch="$2"
+            ext=""
+            if [ "$goos" = "windows" ]; then
+              ext=".exe"
+            fi
+
+            name="impactctl_${version}_${goos}_${goarch}"
+            out="work/${name}/impactctl${ext}"
+            mkdir -p "work/${name}"
+
+            CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
+              go build -trimpath \
+              -ldflags "-s -w -X main.version=${version}" \
+              -o "$out" ./cmd/impactctl
+
+            cp LICENSE README.md "work/${name}/"
+
+            if [ "$goos" = "windows" ]; then
+              (cd work && zip -qr "../dist/${name}.zip" "$name")
+            else
+              tar -C work -czf "dist/${name}.tar.gz" "$name"
+            fi
+          }
+
+          build_archive linux amd64
+          build_archive linux arm64
+          build_archive darwin amd64
+          build_archive darwin arm64
+          build_archive windows amd64
+
+          (cd dist && sha256sum * > checksums.txt)
+
+      - name: Smoke-test Linux release binary
+        run: |
+          mkdir -p "$RUNNER_TEMP/impactctl-smoke"
+          tar -xzf "dist/impactctl_${{ github.event.release.tag_name }}_linux_amd64.tar.gz" \
+            -C "$RUNNER_TEMP/impactctl-smoke"
+          "$RUNNER_TEMP/impactctl-smoke/impactctl_${{ github.event.release.tag_name }}_linux_amd64/impactctl" version
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" dist/* --clobber
