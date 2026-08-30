@@ -35,6 +35,34 @@ func TestDetectors(t *testing.T) {
 	}
 }
 
+func TestConfigDetectorAvoidsSourceFalsePositives(t *testing.T) {
+	for _, p := range []string{
+		"internal/servicemap/config.go",
+		"internal/servicemap/config_test.go",
+		"src/config.ts",
+		"pkg/config.py",
+	} {
+		if isConfig(p) {
+			t.Fatalf("isConfig(%q)=true, want false for source file", p)
+		}
+	}
+
+	for _, p := range []string{
+		".impactctl.yml",
+		".env",
+		".env.production",
+		"config/app.toml",
+		"config/runtime.ini",
+		"deploy/app-config.yaml",
+		"settings.json",
+		"application.yml",
+	} {
+		if !isConfig(p) {
+			t.Fatalf("isConfig(%q)=false, want true", p)
+		}
+	}
+}
+
 func TestDiscoverCodeownersStandardLocations(t *testing.T) {
 	root := t.TempDir()
 
