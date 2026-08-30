@@ -100,7 +100,7 @@ The v0.1 workflow intentionally does **not** execute fork-supplied code with a w
 - [x] JSON output
 - [x] Markdown PR payload
 - [x] golden-fixture integration tests
-- [ ] GitHub Action PR comment validated on a live pull request
+- [x] GitHub Action PR comment validated on a live pull request
 
 ### v0.2 — service impact
 - [ ] service map configuration
@@ -121,6 +121,8 @@ Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the issu
 ## Status
 
 `impactctl` is being built in public. The first milestone is a small, trusted CLI that developers can run on any repository in seconds.
+
+The PR comment workflow was live-validated on the repository's own v0.1 integration pull request before release.
 
 Contributions, edge cases and real-world examples are welcome.
 
