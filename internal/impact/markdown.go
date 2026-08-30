@@ -11,7 +11,7 @@ func RenderMarkdown(r Report) string {
 	var b strings.Builder
 	fmt.Fprintln(&b, commentMarker)
 	fmt.Fprintf(&b, "## impactctl — %s IMPACT (%d/100)\n\n", r.Risk, r.RiskScore)
-	fmt.Fprintf(&b, "| Signal | Count |\n| --- | ---: |\n| Changed files | %d |\n| Findings | %d |\n| Owner teams | %d |\n| Affected services | %d |\n", len(r.Files), len(r.Findings), len(r.Owners), len(r.AffectedServices))
+	fmt.Fprintf(&b, "| Signal | Count |\n| --- | ---: |\n| Changed files | %d |\n| Findings | %d |\n| Owner teams | %d |\n| Changed services | %d |\n| Contract services | %d |\n| Downstream services | %d |\n", len(r.Files), len(r.Findings), len(r.Owners), len(r.ChangedServices), len(r.AffectedServices), len(r.DownstreamServices))
 
 	if len(r.Findings) > 0 {
 		fmt.Fprintln(&b, "\n### Why")
@@ -20,8 +20,15 @@ func RenderMarkdown(r Report) string {
 		}
 	}
 
+	if len(r.ChangedServices) > 0 {
+		fmt.Fprintln(&b, "\n### Changed services")
+		for _, service := range r.ChangedServices {
+			fmt.Fprintf(&b, "- `%s`\n", service)
+		}
+	}
+
 	if len(r.AffectedServices) > 0 {
-		fmt.Fprintln(&b, "\n### Service impact")
+		fmt.Fprintln(&b, "\n### Contract service impact")
 		fmt.Fprintln(&b, "| Role | Service | Contract | Criticality | Owners |")
 		fmt.Fprintln(&b, "| --- | --- | --- | --- | --- |")
 		for _, service := range r.AffectedServices {
@@ -34,6 +41,23 @@ func RenderMarkdown(r Report) string {
 				owners = strings.Join(service.Owners, ", ")
 			}
 			fmt.Fprintf(&b, "| %s | `%s` | `%s` | %s | %s |\n", service.Role, service.Name, service.Contract, criticality, owners)
+		}
+	}
+
+	if len(r.DownstreamServices) > 0 {
+		fmt.Fprintln(&b, "\n### Downstream impact")
+		fmt.Fprintln(&b, "| Service | Dependency path | Criticality | Owners |")
+		fmt.Fprintln(&b, "| --- | --- | --- | --- |")
+		for _, service := range r.DownstreamServices {
+			criticality := service.Criticality
+			if criticality == "" {
+				criticality = "—"
+			}
+			owners := "—"
+			if len(service.Owners) > 0 {
+				owners = strings.Join(service.Owners, ", ")
+			}
+			fmt.Fprintf(&b, "| `%s` | `%s` | %s | %s |\n", service.Name, strings.Join(service.Path, " → "), criticality, owners)
 		}
 	}
 
