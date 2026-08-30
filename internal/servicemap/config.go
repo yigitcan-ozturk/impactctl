@@ -189,6 +189,7 @@ func (c Config) ServicesForPath(repoPath string) []Service {
 				break
 			}
 		}
+	}
 	sort.Slice(matches, func(i, j int) bool {
 		return matches[i].Name < matches[j].Name
 	})
