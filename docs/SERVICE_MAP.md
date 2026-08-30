@@ -2,7 +2,7 @@
 
 `impactctl` v0.2 introduces an optional repository-local service map at `.impactctl.yml`.
 
-The file gives the analyzer explicit evidence for mapping changed repository paths to logical services and for declaring OpenAPI provider/consumer relationships. It is optional: if the file does not exist, v0.1 repository-level analysis continues unchanged.
+The file gives the analyzer explicit evidence for mapping changed repository paths to logical services, declaring OpenAPI provider/consumer relationships, and describing service dependency edges. It is optional: if the file does not exist, v0.1 repository-level analysis continues unchanged.
 
 ## Schema version
 
@@ -21,7 +21,6 @@ services:
       - path: api/orders/openapi.yaml
         consumers:
           - checkout
-          - mobile
 
   - name: checkout
     paths:
@@ -29,15 +28,25 @@ services:
     criticality: medium
     owners:
       - "@checkout-team"
+    depends_on:
+      - orders
 
-  - name: mobile
+  - name: billing
     paths:
-      - apps/mobile/**
+      - services/billing/**
+    criticality: critical
     owners:
-      - "@mobile-team"
+      - "@billing-team"
+    depends_on:
+      - checkout
 ```
 
-In this example, `orders` explicitly provides `api/orders/openapi.yaml`, while `checkout` and `mobile` explicitly consume that contract. A change to the contract reports all three services with their provider/consumer roles.
+In this example:
+
+- `orders` provides the OpenAPI contract.
+- `checkout` is an explicitly declared consumer of that contract and also explicitly depends on `orders`.
+- `billing` depends on `checkout`.
+- A change to `orders` can therefore surface `orders → checkout` and `orders → checkout → billing` as explainable downstream paths.
 
 ## Fields
 
@@ -55,7 +64,10 @@ Each service supports:
 - `paths` — required non-empty list of repository-relative path patterns
 - `criticality` — optional: `low`, `medium`, `high`, or `critical`
 - `owners` — optional list of team/user identifiers
+- `depends_on` — optional list of logical upstream service names
 - `openapi` — optional list of OpenAPI contracts provided by this service
+
+`depends_on` is directional. If `checkout` declares `depends_on: [orders]`, a change to `orders` may affect `checkout` downstream. Dependency names must reference another declared service. Empty, unknown, duplicate and self-dependencies are rejected.
 
 Each `openapi` entry supports:
 
@@ -85,20 +97,61 @@ OpenAPI contract matching uses the same path rules. The changed file path is pre
 
 ## Explicit relationship rule
 
-`impactctl` does not infer API consumers from imports, naming, network calls, repository proximity or other heuristics.
+`impactctl` does not infer service relationships from imports, naming, network calls, repository proximity or other heuristics.
 
-If an OpenAPI file changes and no provider/consumer mapping is declared, the normal v0.1 contract finding still appears, but no service relationship is fabricated.
+Relationships enter the graph only through explicit configuration:
 
-When a mapping exists, human, JSON and Markdown outputs report:
+- `depends_on` creates a general service dependency edge.
+- an OpenAPI provider plus an explicit `consumers` declaration creates a provider → consumer impact edge.
 
-- provider service
-- explicitly declared consumer services
-- changed contract path
-- configured criticality
-- configured service owners
+If an OpenAPI file changes and no provider/consumer mapping is declared, the normal repository-level contract finding still appears, but no service relationship is fabricated.
 
-The v0.2 #9 implementation deliberately does not add service relationships to the risk score. Dependency traversal and downstream criticality contribution belong to #11.
+## Downstream impact
 
-## Next boundary
+Changed files are first mapped to configured services. Those directly changed services become traversal sources.
 
-Schema version 1 now supports direct OpenAPI provider/consumer relationships. General service dependency edges and transitive downstream impact remain a separate roadmap step (#11).
+`impactctl` then walks explicit downstream edges and reports each affected service with an evidence path. The traversal is:
+
+- deterministic
+- cycle-safe
+- multi-source
+- local-only
+- bounded by the configured graph
+
+Linear example:
+
+```text
+orders → checkout → billing
+```
+
+Branching graphs report each reachable service. Cycles terminate safely and do not re-add the source as its own downstream impact.
+
+When the same downstream service can be reached through more than one path, the deterministic traversal keeps one stable path rather than emitting duplicate service impacts.
+
+## Risk contribution
+
+Direct OpenAPI provider/consumer relationships remain evidence and do not add a separate score by themselves.
+
+For v0.2 downstream analysis, each reachable service configured with `criticality: critical` contributes a **+20 downstream risk finding**. The finding includes the dependency path that caused the escalation. Existing total risk remains capped at 100.
+
+`low`, `medium`, and `high` downstream criticalities are currently reported as metadata but do not independently add risk points. This keeps the first scoring rule small and explainable.
+
+## Output contract
+
+Human, JSON and Markdown output share the same core service-impact facts.
+
+The report includes:
+
+- `ChangedServices` — directly changed configured services
+- `AffectedServices` — direct OpenAPI provider/consumer impacts
+- `DownstreamServices` — transitive dependency impacts
+
+Each downstream service carries:
+
+- `Source` — traversal source service
+- `Name` — affected downstream service
+- `Path` — ordered dependency path from source to affected service
+- `Criticality` — configured service criticality
+- `Owners` — configured service owners
+
+This preserves the core rule of `impactctl`: every elevated signal should be traceable to explicit evidence.
