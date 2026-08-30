@@ -24,10 +24,11 @@ type Config struct {
 }
 
 type Service struct {
-	Name        string   `yaml:"name"`
-	Paths       []string `yaml:"paths"`
-	Criticality string   `yaml:"criticality,omitempty"`
-	Owners      []string `yaml:"owners,omitempty"`
+	Name        string            `yaml:"name"`
+	Paths       []string          `yaml:"paths"`
+	Criticality string            `yaml:"criticality,omitempty"`
+	Owners      []string          `yaml:"owners,omitempty"`
+	OpenAPI     []OpenAPIContract `yaml:"openapi,omitempty"`
 }
 
 func Load(root string) (Config, bool, error) {
@@ -88,7 +89,10 @@ func (c Config) Validate() error {
 			return fmt.Errorf("duplicate service name %q", name)
 		}
 		names[name] = struct{}{}
+	}
 
+	for _, service := range c.Services {
+		name := strings.TrimSpace(service.Name)
 		if len(service.Paths) == 0 {
 			return fmt.Errorf("service %q must declare at least one path", name)
 		}
@@ -121,6 +125,36 @@ func (c Config) Validate() error {
 				return fmt.Errorf("service %q contains duplicate owner %q", name, owner)
 			}
 			seenOwners[owner] = struct{}{}
+		}
+
+		seenContracts := map[string]struct{}{}
+		for _, contract := range service.OpenAPI {
+			contractPath := strings.TrimSpace(contract.Path)
+			if err := validatePattern(contractPath); err != nil {
+				return fmt.Errorf("service %q OpenAPI path %q: %w", name, contractPath, err)
+			}
+			if _, exists := seenContracts[contractPath]; exists {
+				return fmt.Errorf("service %q contains duplicate OpenAPI path %q", name, contractPath)
+			}
+			seenContracts[contractPath] = struct{}{}
+
+			seenConsumers := map[string]struct{}{}
+			for _, consumer := range contract.Consumers {
+				consumer = strings.TrimSpace(consumer)
+				if consumer == "" {
+					return fmt.Errorf("service %q OpenAPI path %q contains an empty consumer", name, contractPath)
+				}
+				if consumer == name {
+					return fmt.Errorf("service %q OpenAPI path %q cannot consume itself", name, contractPath)
+				}
+				if _, exists := names[consumer]; !exists {
+					return fmt.Errorf("service %q OpenAPI path %q references unknown consumer %q", name, contractPath, consumer)
+				}
+				if _, exists := seenConsumers[consumer]; exists {
+					return fmt.Errorf("service %q OpenAPI path %q contains duplicate consumer %q", name, contractPath, consumer)
+				}
+				seenConsumers[consumer] = struct{}{}
+			}
 		}
 	}
 	return nil
