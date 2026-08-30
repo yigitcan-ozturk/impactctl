@@ -19,7 +19,7 @@ A small code diff can have a large system impact. Reviewers often see the change
 ```text
 $ impactctl pr --base main --head HEAD
 
-HIGH IMPACT  (55/100)
+CRITICAL IMPACT  (75/100)
 ────────────────────────────────────────────
 Changed files          7
 Findings               3
