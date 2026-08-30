@@ -64,10 +64,24 @@ func printReport(r impact.Report) {
 	fmt.Printf("Changed files          %d\n", len(r.Files))
 	fmt.Printf("Findings               %d\n", len(r.Findings))
 	fmt.Printf("Owner teams            %d\n", len(r.Owners))
+	fmt.Printf("Affected services      %d\n", len(r.AffectedServices))
 	if len(r.Findings) > 0 {
 		fmt.Println("\nWhy")
 		for _, f := range r.Findings {
 			fmt.Printf("! %-12s %s\n", f.Category, f.Detail)
+		}
+	}
+	if len(r.AffectedServices) > 0 {
+		fmt.Println("\nService impact")
+		for _, service := range r.AffectedServices {
+			fmt.Printf("→ %-8s %-20s via %s", service.Role, service.Name, service.Contract)
+			if service.Criticality != "" {
+				fmt.Printf(" [%s]", service.Criticality)
+			}
+			if len(service.Owners) > 0 {
+				fmt.Printf(" owners: %s", strings.Join(service.Owners, ", "))
+			}
+			fmt.Println()
 		}
 	}
 	if len(r.Owners) > 0 {
