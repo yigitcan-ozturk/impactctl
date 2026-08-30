@@ -26,7 +26,13 @@ func main() {
 	base := fs.String("base", "main", "base git ref")
 	head := fs.String("head", "HEAD", "head git ref")
 	jsonOut := fs.Bool("json", false, "emit JSON")
+	markdownOut := fs.Bool("markdown", false, "emit GitHub-flavored Markdown")
 	_ = fs.Parse(os.Args[2:])
+
+	if *jsonOut && *markdownOut {
+		fmt.Fprintln(os.Stderr, "impactctl: --json and --markdown cannot be used together")
+		os.Exit(2)
+	}
 
 	report, err := impact.Analyze(*base, *head)
 	if err != nil {
@@ -40,12 +46,16 @@ func main() {
 		_ = enc.Encode(report)
 		return
 	}
+	if *markdownOut {
+		fmt.Print(impact.RenderMarkdown(report))
+		return
+	}
 	printReport(report)
 }
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "impactctl — know what your change can break before you merge it")
-	fmt.Fprintln(os.Stderr, "\nUsage:\n  impactctl pr [--base main] [--head HEAD] [--json]\n  impactctl version")
+	fmt.Fprintln(os.Stderr, "\nUsage:\n  impactctl pr [--base main] [--head HEAD] [--json | --markdown]\n  impactctl version")
 }
 
 func printReport(r impact.Report) {
