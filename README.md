@@ -3,10 +3,11 @@
 **Know what your change can break — before you merge it.**
 
 [![CI](https://github.com/yigitcan-ozturk/impactctl/actions/workflows/ci.yml/badge.svg)](https://github.com/yigitcan-ozturk/impactctl/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/yigitcan-ozturk/impactctl)](https://github.com/yigitcan-ozturk/impactctl/releases/latest)
 
 `impactctl` is a deterministic change-impact CLI for pull requests. It turns a Git diff into a compact risk signal by inspecting technical contracts, database migrations, deployment/configuration changes, CI/CD files and repository ownership.
 
-> Early-stage open source. The v0.1 goal is intentionally narrow: make change impact visible in seconds, without requiring a hosted service or AI.
+> `v0.1.0` is the first public release. The initial scope is intentionally narrow: make change impact visible in seconds, without requiring a hosted service or AI.
 
 ## Why
 
@@ -49,13 +50,17 @@ Suggested review
 - Deterministic `LOW / MEDIUM / HIGH / CRITICAL` risk classification
 - Human-readable, JSON and GitHub-flavored Markdown output
 
-## Install from source
+## Install
+
+Install the released Go CLI:
 
 ```bash
-go install github.com/yigitcan-ozturk/impactctl/cmd/impactctl@latest
+go install github.com/yigitcan-ozturk/impactctl/cmd/impactctl@v0.1.0
 ```
 
-Until the first release is tagged, clone and build locally:
+Or download a prebuilt binary for Linux, macOS or Windows from the [latest GitHub release](https://github.com/yigitcan-ozturk/impactctl/releases/latest). Release archives include SHA-256 checksums.
+
+Build from source:
 
 ```bash
 git clone https://github.com/yigitcan-ozturk/impactctl.git
@@ -101,6 +106,7 @@ The v0.1 workflow intentionally does **not** execute fork-supplied code with a w
 - [x] Markdown PR payload
 - [x] golden-fixture integration tests
 - [x] GitHub Action PR comment validated on a live pull request
+- [x] cross-platform `v0.1.0` release with checksums
 
 ### v0.2 — service impact
 - [ ] service map configuration
@@ -120,9 +126,9 @@ Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the issu
 
 ## Status
 
-`impactctl` is being built in public. The first milestone is a small, trusted CLI that developers can run on any repository in seconds.
+`impactctl v0.1.0` is publicly released and being built in the open. The first milestone is a small, trusted CLI that developers can run on any repository in seconds.
 
-The PR comment workflow was live-validated on the repository's own v0.1 integration pull request before release.
+The PR comment workflow was live-validated on the repository's own v0.1 integration pull request before release. Release packaging, version injection and checksum generation are also covered by CI smoke tests.
 
 Contributions, edge cases and real-world examples are welcome.
 
