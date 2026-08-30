@@ -129,8 +129,22 @@ func isWorkflow(p string) bool {
 }
 
 func isConfig(p string) bool {
-	b := filepath.Base(p)
-	return strings.HasSuffix(p, ".env") || strings.Contains(b, "config") || strings.HasSuffix(p, ".toml") || strings.HasSuffix(p, ".ini")
+	b := strings.ToLower(filepath.Base(p))
+	ext := strings.ToLower(filepath.Ext(b))
+
+	if b == ".impactctl.yml" || b == ".impactctl.yaml" {
+		return true
+	}
+	if b == ".env" || strings.HasPrefix(b, ".env.") || strings.HasSuffix(b, ".env") {
+		return true
+	}
+	if ext == ".toml" || ext == ".ini" {
+		return true
+	}
+	if ext == ".yaml" || ext == ".yml" || ext == ".json" {
+		return strings.Contains(b, "config") || strings.Contains(b, "settings") || strings.Contains(b, "application")
+	}
+	return b == "config" || b == "configuration"
 }
 
 func discoverCodeowners(root string) (string, bool) {
