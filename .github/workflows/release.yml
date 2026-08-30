@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Verify source
+        run: |
+          go test ./...
+          go vet ./...
+
+      - name: Build release archives
+        run: bash scripts/build-release.sh "${{ github.event.release.tag_name }}"
+
+      - name: Smoke-test Linux release binary
+        run: |
+          mkdir -p "$RUNNER_TEMP/impactctl-smoke"
+          tar -xzf "dist/impactctl_${{ github.event.release.tag_name }}_linux_amd64.tar.gz" \
+            -C "$RUNNER_TEMP/impactctl-smoke"
+          output=$("$RUNNER_TEMP/impactctl-smoke/impactctl_${{ github.event.release.tag_name }}_linux_amd64/impactctl" version)
+          test "$output" = "impactctl ${{ github.event.release.tag_name }}"
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/* --clobber

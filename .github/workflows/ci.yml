@@ -19,3 +19,23 @@ jobs:
       - run: go test ./...
       - run: go vet ./...
       - run: go build ./cmd/impactctl
+
+  release-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - name: Build one release archive
+        run: bash scripts/build-release.sh dev linux/amd64
+      - name: Verify packaged binary version
+        run: |
+          mkdir -p "$RUNNER_TEMP/impactctl-release-smoke"
+          tar -xzf dist/impactctl_dev_linux_amd64.tar.gz -C "$RUNNER_TEMP/impactctl-release-smoke"
+          output=$("$RUNNER_TEMP/impactctl-release-smoke/impactctl_dev_linux_amd64/impactctl" version)
+          test "$output" = "impactctl dev"
+      - name: Verify checksum manifest
+        run: |
+          cd dist
+          sha256sum --check checksums.txt
