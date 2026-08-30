@@ -132,6 +132,9 @@ func isConfig(p string) bool {
 	b := strings.ToLower(filepath.Base(p))
 	ext := strings.ToLower(filepath.Ext(b))
 
+	if b == ".impactctl.yml" || b == ".impactctl.yaml" {
+		return true
+	}
 	if b == ".env" || strings.HasPrefix(b, ".env.") || strings.HasSuffix(b, ".env") {
 		return true
 	}
