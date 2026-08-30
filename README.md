@@ -109,11 +109,12 @@ The v0.1 workflow intentionally does **not** execute fork-supplied code with a w
 - [x] cross-platform `v0.1.0` release with checksums
 
 ### v0.2 — service impact
-- [ ] [service-map configuration](https://github.com/yigitcan-ozturk/impactctl/issues/8)
+- [x] [service-map configuration](https://github.com/yigitcan-ozturk/impactctl/issues/8)
 - [ ] [API consumer/provider relationships](https://github.com/yigitcan-ozturk/impactctl/issues/9)
 - [ ] [AsyncAPI event-schema impact](https://github.com/yigitcan-ozturk/impactctl/issues/10)
 - [ ] [dependency-aware downstream impact](https://github.com/yigitcan-ozturk/impactctl/issues/11)
 - [ ] [optional `oasdiff` semantic adapter](https://github.com/yigitcan-ozturk/impactctl/issues/12)
+- [ ] [real multi-service repository validation](https://github.com/yigitcan-ozturk/impactctl/issues/15)
 
 The v0.2 direction is deliberately composable: `impactctl` should own **change → service/system impact** while interoperating with specialist analyzers where they already provide deeper domain semantics.
 
