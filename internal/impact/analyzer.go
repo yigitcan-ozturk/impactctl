@@ -180,8 +180,12 @@ func classify(score int) string {
 }
 
 func isOpenAPI(p string) bool {
-	b := filepath.Base(p)
-	return strings.Contains(p, "openapi") || strings.Contains(p, "swagger") || b == "api.yaml" || b == "api.yml"
+	b := strings.ToLower(filepath.Base(p))
+	ext := strings.ToLower(filepath.Ext(b))
+	if ext != ".yaml" && ext != ".yml" && ext != ".json" {
+		return false
+	}
+	return strings.Contains(b, "openapi") || strings.Contains(b, "swagger") || b == "api.yaml" || b == "api.yml" || b == "api.json"
 }
 
 func isMigration(p string) bool {
