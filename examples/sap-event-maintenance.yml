@@ -1,0 +1,36 @@
+version: 1
+change:
+  id: DEVK900203
+  description: Equipment maintenance event schema change
+  changed:
+    - Z_EQUIPMENT_EVENT
+
+nodes:
+  - name: Z_EQUIPMENT_EVENT
+    kind: sap-object
+    criticality: high
+    owners: [sap-eam]
+
+  - name: BTP_EVENT_MESH_BRIDGE
+    kind: event
+    criticality: high
+    owners: [integration]
+    depends_on: [Z_EQUIPMENT_EVENT]
+
+  - name: MAINTENANCE_API
+    kind: api
+    criticality: high
+    owners: [platform-api]
+    depends_on: [BTP_EVENT_MESH_BRIDGE]
+
+  - name: FIELD_SERVICE_APP
+    kind: application
+    criticality: high
+    owners: [field-service-platform]
+    depends_on: [MAINTENANCE_API]
+
+  - name: BREAKDOWN_RESPONSE
+    kind: business-process
+    criticality: critical
+    owners: [maintenance-operations]
+    depends_on: [FIELD_SERVICE_APP]
