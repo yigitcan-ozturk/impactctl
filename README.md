@@ -81,6 +81,29 @@ For a pull-request comment payload:
 ./impactctl pr --base main --head HEAD --markdown
 ```
 
+## Experimental: SAP landscape impact
+
+`impactctl` now includes an experimental, local-first SAP/enterprise landscape spike that asks a different question:
+
+**If this explicit SAP component changes, what surrounding integrations, applications and business processes deserve review — and through which dependency path?**
+
+Run the synthetic credential-free example:
+
+```bash
+go run ./cmd/impactctl sap --manifest examples/sap-vendor-status.yml
+```
+
+Example impact path:
+
+```text
+Z_VENDOR_STATUS
+  -> BTP_VENDOR_IFLOW
+  -> SUPPLIER_PORTAL
+  -> VENDOR_APPROVAL
+```
+
+The spike uses only explicit dependencies from a strict local YAML manifest. It does not connect to SAP systems, infer unknown relationships or replace SAP-native change controls. See [`docs/SAP_IMPACT.md`](docs/SAP_IMPACT.md) for schema, scoring and product boundaries.
+
 ## Try it on a real repository
 
 The most useful next validation is simple: run `impactctl` against a real pull request and check whether the reported review scope matches what an experienced maintainer would expect.
@@ -135,10 +158,12 @@ The v0.2 direction is deliberately composable: `impactctl` should own **change �
 The v0.2 [service-map schema](docs/SERVICE_MAP.md) covers path-to-service mapping, direct OpenAPI provider/consumer relationships and explicit dependency-aware downstream paths. [AsyncAPI impact analysis](docs/ASYNCAPI.md) adds conservative `ADDITIVE / BREAKING / REVIEW` event-contract evidence. See the [v0.2 execution plan and release gate](docs/V0.2_EXECUTION.md) for sequencing and acceptance criteria. Public adoption signals are tracked separately in [traction](docs/TRACTION.md).
 
 ### v0.3 — system impact
+- [x] experimental SAP/enterprise landscape manifest spike
 - [ ] Kubernetes workload relationships
 - [ ] Terraform resource ownership
 - [ ] cross-repository impact contracts
 - [ ] architecture boundary policies
+- [ ] evidence-backed enterprise adapters for selected external systems
 
 ## Contributing
 
@@ -149,6 +174,8 @@ Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the issu
 `impactctl v0.1.0` is publicly released and being built in the open. The first milestone is a small, trusted CLI that developers can run on any repository in seconds.
 
 The PR comment workflow was live-validated on the repository's own v0.1 integration pull request before release. Release packaging, version injection and checksum generation are also covered by CI smoke tests.
+
+Experimental enterprise adapters remain additive and do not change the released v0.1 repository-impact contract.
 
 Contributions, edge cases and real-world examples are welcome.
 

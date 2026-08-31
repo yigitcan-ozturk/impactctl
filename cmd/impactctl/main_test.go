@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/yigitcan-ozturk/impactctl/internal/impact"
+	"github.com/yigitcan-ozturk/impactctl/internal/sapimpact"
 )
 
 func TestCriticalImpactGoldenFixture(t *testing.T) {
@@ -66,6 +67,66 @@ func TestCriticalImpactGoldenFixture(t *testing.T) {
 		if !categories[want] {
 			t.Fatalf("missing %q finding in %+v", want, report.Findings)
 		}
+	}
+}
+
+func TestSAPImpactGoldenFixture(t *testing.T) {
+	bin := filepath.Join(t.TempDir(), "impactctl")
+	build := exec.Command("go", "build", "-o", bin, ".")
+	if out, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build impactctl: %v\n%s", err, out)
+	}
+
+	manifest := filepath.Join(t.TempDir(), "sap-impact.yml")
+	if err := os.WriteFile(manifest, []byte(`
+version: 1
+change:
+  id: DEVK900123
+  description: Vendor status API change
+  changed: [Z_VENDOR_STATUS]
+nodes:
+  - name: Z_VENDOR_STATUS
+    kind: sap-object
+    criticality: high
+    owners: [sap-mm]
+  - name: BTP_VENDOR_IFLOW
+    kind: integration
+    criticality: high
+    owners: [integration]
+    depends_on: [Z_VENDOR_STATUS]
+  - name: SUPPLIER_PORTAL
+    kind: application
+    criticality: medium
+    owners: [platform]
+    depends_on: [BTP_VENDOR_IFLOW]
+  - name: VENDOR_APPROVAL
+    kind: business-process
+    criticality: critical
+    owners: [procurement]
+    depends_on: [SUPPLIER_PORTAL]
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cmd := exec.Command(bin, "sap", "--manifest", manifest, "--json")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("impactctl sap failed: %v\n%s", err, out)
+	}
+
+	var report sapimpact.Report
+	if err := json.Unmarshal(out, &report); err != nil {
+		t.Fatalf("decode SAP report: %v\n%s", err, out)
+	}
+	if report.Risk != "CRITICAL" || report.RiskScore != 84 {
+		t.Fatalf("SAP risk=%s %d want CRITICAL 84; report=%+v", report.Risk, report.RiskScore, report)
+	}
+	if len(report.Downstream) != 3 {
+		t.Fatalf("SAP downstream=%d want 3", len(report.Downstream))
+	}
+	wantProcesses := []string{"VENDOR_APPROVAL"}
+	if !reflect.DeepEqual(report.AffectedProcesses, wantProcesses) {
+		t.Fatalf("SAP processes=%v want %v", report.AffectedProcesses, wantProcesses)
 	}
 }
 
