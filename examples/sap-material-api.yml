@@ -1,0 +1,36 @@
+version: 1
+change:
+  id: DEVK900201
+  description: Material master API contract change
+  changed:
+    - Z_MATERIAL_API
+
+nodes:
+  - name: Z_MATERIAL_API
+    kind: sap-object
+    criticality: high
+    owners: [sap-mdg]
+
+  - name: BTP_MATERIAL_SYNC
+    kind: integration
+    criticality: high
+    owners: [integration]
+    depends_on: [Z_MATERIAL_API]
+
+  - name: PRODUCT_DATA_HUB
+    kind: application
+    criticality: high
+    owners: [product-platform]
+    depends_on: [BTP_MATERIAL_SYNC]
+
+  - name: ECOMMERCE_CATALOG
+    kind: application
+    criticality: medium
+    owners: [digital-commerce]
+    depends_on: [PRODUCT_DATA_HUB]
+
+  - name: MATERIAL_PUBLISHING
+    kind: business-process
+    criticality: high
+    owners: [master-data-operations]
+    depends_on: [ECOMMERCE_CATALOG]
