@@ -1,0 +1,36 @@
+version: 1
+change:
+  id: DEVK900202
+  description: Outbound delivery IDoc mapping change
+  changed:
+    - Z_IDOC_DELIVERY_MAP
+
+nodes:
+  - name: Z_IDOC_DELIVERY_MAP
+    kind: sap-object
+    criticality: high
+    owners: [sap-logistics]
+
+  - name: DELIVERY_IDOC_FLOW
+    kind: integration
+    criticality: high
+    owners: [integration]
+    depends_on: [Z_IDOC_DELIVERY_MAP]
+
+  - name: WAREHOUSE_EXECUTION
+    kind: application
+    criticality: critical
+    owners: [warehouse-platform]
+    depends_on: [DELIVERY_IDOC_FLOW]
+
+  - name: SHIPPING_LABEL_JOB
+    kind: job
+    criticality: high
+    owners: [warehouse-operations]
+    depends_on: [WAREHOUSE_EXECUTION]
+
+  - name: OUTBOUND_FULFILMENT
+    kind: business-process
+    criticality: critical
+    owners: [logistics-operations]
+    depends_on: [SHIPPING_LABEL_JOB]
