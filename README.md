@@ -7,7 +7,7 @@
 
 `impactctl` is a deterministic change-impact CLI for pull requests. It turns a Git diff into a compact risk signal by inspecting technical contracts, database migrations, deployment/configuration changes, CI/CD files and repository ownership.
 
-> `v0.1.0` is the first public release. The initial scope is intentionally narrow: make change impact visible in seconds, without requiring a hosted service or AI.
+> `v0.1.0` is the first public release. Current `v0.2` development extends the same explainable model from repository-level change signals into explicit service relationships and downstream system impact.
 
 ## Why
 
@@ -80,6 +80,20 @@ For a pull-request comment payload:
 ```bash
 ./impactctl pr --base main --head HEAD --markdown
 ```
+
+## Try it on a real repository
+
+The most useful next validation is simple: run `impactctl` against a real pull request and check whether the reported review scope matches what an experienced maintainer would expect.
+
+Useful feedback includes:
+
+- a change that should have been higher or lower risk;
+- a false-positive config, migration, contract or ownership signal;
+- a service relationship that should or should not propagate downstream;
+- a repository pattern that the current service-map model cannot express cleanly;
+- a PR where the suggested review scope changed a real review decision.
+
+Reproducible examples are especially valuable. Open an issue with the repository structure, relevant changed paths, expected result and actual `impactctl` output. Sanitized or synthetic reproductions are welcome when the original repository cannot be shared.
 
 ## GitHub pull-request comments
 
