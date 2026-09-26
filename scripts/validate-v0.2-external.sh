@@ -38,7 +38,9 @@ YAML
 git add .impactctl.yml
 git -c user.name=impactctl-validation -c user.email=validation@example.invalid commit -qm 'validation: isolated explicit service map'
 BASE="$(git rev-parse HEAD)"
-printf '\n# impactctl validation: isolated change\n' >> services/catalog/app.py
+printf '
+# impactctl validation: isolated change
+' >> services/catalog/app.py
 git add services/catalog/app.py
 git -c user.name=impactctl-validation -c user.email=validation@example.invalid commit -qm 'validation: controlled catalog source change'
 HEAD="$(git rev-parse HEAD)"
@@ -53,7 +55,9 @@ import json, sys
 r=json.load(open(sys.argv[1]))
 print("JSON root keys:", sorted(r))
 def names(items):
-    if items is None:\n        items = []\n    if not isinstance(items, list):
+    if items is None:
+        items = []
+    if not isinstance(items, list):
         raise AssertionError(f"expected list, got {type(items).__name__}")
     return {x if isinstance(x,str) else x.get("Name",x.get("name")) for x in items}
 direct=names(r["ChangedServices"])
@@ -64,14 +68,18 @@ assert direct == {"catalog"}, f"unexpected direct services: {direct}"
 assert downstream == {"orders","gateway"}, f"unexpected downstream services: {downstream}"
 print("PASS: pre-registered catalog impact semantics")
 PY
-printf 'candidate_base=%s\ncandidate_head=%s\n' "$BASE" "$HEAD" > "$OUT/controlled-change.txt"
+printf 'candidate_base=%s
+candidate_head=%s
+' "$BASE" "$HEAD" > "$OUT/controlled-change.txt"
 echo "Outputs: $OUT"
 
 # Verify the opposite direction and a terminal gateway node in the same
 # pinned REAL repository, with independent controlled commits.
 for SERVICE in orders gateway; do
   git reset --hard "$BASE" >/dev/null
-  printf '\n# impactctl validation: %s-only controlled change\n' "$SERVICE" >> "services/$SERVICE/app.py"
+  printf '
+# impactctl validation: %s-only controlled change
+' "$SERVICE" >> "services/$SERVICE/app.py"
   git add "services/$SERVICE/app.py"
   git -c user.name=impactctl-validation -c user.email=validation@example.invalid commit -qm "validation: controlled $SERVICE source change"
   CASE_HEAD="$(git rev-parse HEAD)"
@@ -83,7 +91,8 @@ import json,sys
 r=json.load(open(sys.argv[1]))
 service=sys.argv[2]
 def names(items):
-    if items is None: items=[]\n    assert isinstance(items,list), type(items)
+    if items is None: items=[]
+    assert isinstance(items,list), type(items)
     return {x if isinstance(x,str) else x.get("Name",x.get("name")) for x in items}
 expected={"orders":{"gateway"},"gateway":set()}
 direct=names(r["ChangedServices"])
@@ -98,7 +107,9 @@ done
 # Do not silently claim byte-for-byte v0.1 parity; require explicit no-service
 # behavior, and keep the original v0.1 regression suite as a separate gate.
 git reset --hard a9df3b8b62b0e9e569963989b8ae3c4e1798b150 >/dev/null
-printf '\n# impactctl validation: legacy no-config change\n' >> services/catalog/app.py
+printf '
+# impactctl validation: legacy no-config change
+' >> services/catalog/app.py
 git add services/catalog/app.py
 git -c user.name=impactctl-validation -c user.email=validation@example.invalid commit -qm 'validation: legacy no-config catalog change'
 LEGACY_HEAD="$(git rev-parse HEAD)"
