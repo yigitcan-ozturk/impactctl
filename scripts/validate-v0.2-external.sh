@@ -14,7 +14,7 @@ if [[ ! -d "$OUT/candidate/.git" ]]; then
 fi
 cd "$OUT/candidate"
 git fetch origin main
-git checkout --detach origin/main
+git checkout --detach a9df3b8b62b0e9e569963989b8ae3c4e1798b150
 git rev-parse HEAD > "$OUT/candidate.sha"
 (cd "$ROOT" && git rev-parse HEAD) > "$OUT/impactctl.sha"
 go version > "$OUT/go-version.txt"
