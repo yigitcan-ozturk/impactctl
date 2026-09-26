@@ -4,6 +4,23 @@ All notable changes to `impactctl` will be documented in this file.
 
 The project follows semantic versioning from the first public release.
 
+## [Unreleased] — v0.2 release candidate
+
+### Added
+
+- Optional explicit `.impactctl.yml` service-map configuration with service paths, criticality and ownership metadata.
+- Evidence-backed OpenAPI provider/consumer service impact, conservative AsyncAPI event-contract classification and explicit dependency-aware downstream blast radius.
+- Deterministic downstream service paths and human, JSON and Markdown service-impact output.
+- Pinned real public multi-service repository dogfood validation covering catalog, orders, gateway and no-config regression; CI asserts repeat JSON determinism and catalog cross-format core semantic parity.
+
+### Compatibility and boundaries
+
+- Without a service map, the repository-level analysis remains available and does not invent a service dependency graph.
+- Dependencies are declared, not automatically inferred. The core CLI remains local-first.
+- The optional `oasdiff` semantic adapter (#12) is deferred beyond v0.2; no external analyzer is required for the core.
+- External-repository validation is self-executed controlled-change evidence, not an independent practitioner review.
+- v0.2.0 has **not** been tagged or released; v0.1.0 remains the current public install target.
+
 ## [0.1.0] - 2026-08-30
 
 ### Added
