@@ -52,7 +52,17 @@ python3 - "$OUT/result.json" <<'PY'
 import json, sys
 r=json.load(open(sys.argv[1]))
 print("JSON root keys:", sorted(r))
-print("Inspect changed/downstream fields against pre-registered expectations.")
+def names(items):
+    if not isinstance(items, list):
+        raise AssertionError(f"expected list, got {type(items).__name__}")
+    return {x if isinstance(x,str) else x.get("Name",x.get("name")) for x in items}
+direct=names(r["ChangedServices"])
+downstream=names(r["DownstreamServices"])
+print("Direct services:", sorted(direct))
+print("Downstream services:", sorted(downstream))
+assert direct == {"catalog"}, f"unexpected direct services: {direct}"
+assert downstream == {"orders","gateway"}, f"unexpected downstream services: {downstream}"
+print("PASS: pre-registered catalog impact semantics")
 PY
 printf 'candidate_base=%s\ncandidate_head=%s\n' "$BASE" "$HEAD" > "$OUT/controlled-change.txt"
 echo "Outputs: $OUT"
