@@ -81,6 +81,34 @@ For a pull-request comment payload:
 ./impactctl pr --base main --head HEAD --markdown
 ```
 
+## v0.2 service-impact preview (unreleased)
+
+The current development branch supports an **optional, explicit** `.impactctl.yml` service map. This enables path-to-service matching, configured OpenAPI provider/consumer impact, conservative AsyncAPI evidence and deterministic downstream dependency paths. It does not discover runtime dependencies automatically. Without the file, the CLI continues its existing repository-level analysis.
+
+Minimal example:
+
+```yaml
+version: 1
+services:
+  - name: catalog
+    paths: [services/catalog/**]
+    criticality: high
+  - name: orders
+    paths: [services/orders/**]
+    criticality: high
+    depends_on: [catalog]
+  - name: gateway
+    paths: [services/gateway/**]
+    criticality: medium
+    depends_on: [orders, catalog]
+```
+
+Run `impactctl pr --base main --head HEAD` as before. Use `--json` or `--markdown` for machine-readable and pull-request formats. A catalog change in the example directly affects catalog and identifies orders and gateway as declared downstream dependents; a gateway-only change has no declared downstream service. Review [the full service-map schema](docs/SERVICE_MAP.md) before adding contract mappings or owner metadata.
+
+**Upgrade path:** Existing v0.1 users need not add configuration. To enable v0.2 service impact, explicitly document service paths and real dependency edges, review the resulting impact against repository code, and add optional contract metadata as appropriate. Do not treat absent edges as discovered facts. The optional `oasdiff` adapter is deferred beyond v0.2; no network service is required for the core CLI.
+
+The [pinned external-repository validation](docs/validation/V0.2_EXTERNAL_CANDIDATE.md) passed controlled catalog, orders, gateway and no-config scenarios in CI. This is reproducible self-run dogfood evidence, **not** an independent practitioner endorsement. The public install command above intentionally remains pinned to released v0.1.0 until a v0.2.0 release is published.
+
 ## Experimental: SAP landscape impact
 
 `impactctl` now includes an experimental, local-first SAP/enterprise landscape spike that asks a different question:
@@ -151,7 +179,7 @@ The v0.1 workflow intentionally does **not** execute fork-supplied code with a w
 - [x] [AsyncAPI event-schema impact](https://github.com/yigitcan-ozturk/impactctl/issues/10)
 - [x] [dependency-aware downstream impact](https://github.com/yigitcan-ozturk/impactctl/issues/11)
 - [ ] [optional `oasdiff` semantic adapter](https://github.com/yigitcan-ozturk/impactctl/issues/12)
-- [ ] [real multi-service repository validation](https://github.com/yigitcan-ozturk/impactctl/issues/15)
+- [x] [real multi-service repository validation](https://github.com/yigitcan-ozturk/impactctl/issues/15)
 
 The v0.2 direction is deliberately composable: `impactctl` should own **change → service/system impact** while interoperating with specialist analyzers where they already provide deeper domain semantics.
 
