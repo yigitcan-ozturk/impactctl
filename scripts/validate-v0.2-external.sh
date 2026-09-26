@@ -68,6 +68,31 @@ assert direct == {"catalog"}, f"unexpected direct services: {direct}"
 assert downstream == {"orders","gateway"}, f"unexpected downstream services: {downstream}"
 print("PASS: pre-registered catalog impact semantics")
 PY
+# Assert human/JSON/Markdown parity on real upstream catalog scenario.
+python3 - "$OUT/result.json" "$OUT/human.txt" "$OUT/result.md" <<'PY'
+import json,sys
+r=json.load(open(sys.argv[1]))
+human=open(sys.argv[2]).read()
+md=open(sys.argv[3]).read()
+changed=r["ChangedServices"] or []
+downstream=r["DownstreamServices"] or []
+assert "Changed services       1" in human
+assert "Downstream services    2" in human
+assert "| Changed services | 1 |" in md
+assert "| Downstream services | 2 |" in md
+assert "Changed services" in human and "### Changed services" in md
+assert "Downstream impact" in human and "### Downstream impact" in md
+for name in changed:
+    assert "→ "+name in human, ("human changed",name)
+    assert "`"+name+"`" in md, ("markdown changed",name)
+for item in downstream:
+    name=item["Name"]
+    path=item["Path"]
+    assert name in human and " -> ".join(path) in human, ("human downstream",item)
+    assert "`"+name+"`" in md and " → ".join(path) in md, ("markdown downstream",item)
+assert str(r["RiskScore"])+"/100" in human and str(r["RiskScore"])+"/100" in md
+print("PASS: human/JSON/Markdown core service facts, paths and risk score")
+PY
 printf 'candidate_base=%s
 candidate_head=%s
 ' "$BASE" "$HEAD" > "$OUT/controlled-change.txt"
