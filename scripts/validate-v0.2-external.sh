@@ -53,7 +53,7 @@ import json, sys
 r=json.load(open(sys.argv[1]))
 print("JSON root keys:", sorted(r))
 def names(items):
-    if not isinstance(items, list):
+    if items is None:\n        items = []\n    if not isinstance(items, list):
         raise AssertionError(f"expected list, got {type(items).__name__}")
     return {x if isinstance(x,str) else x.get("Name",x.get("name")) for x in items}
 direct=names(r["ChangedServices"])
@@ -83,7 +83,7 @@ import json,sys
 r=json.load(open(sys.argv[1]))
 service=sys.argv[2]
 def names(items):
-    assert isinstance(items,list), type(items)
+    if items is None: items=[]\n    assert isinstance(items,list), type(items)
     return {x if isinstance(x,str) else x.get("Name",x.get("name")) for x in items}
 expected={"orders":{"gateway"},"gateway":set()}
 direct=names(r["ChangedServices"])
