@@ -66,4 +66,50 @@ print("PASS: pre-registered catalog impact semantics")
 PY
 printf 'candidate_base=%s\ncandidate_head=%s\n' "$BASE" "$HEAD" > "$OUT/controlled-change.txt"
 echo "Outputs: $OUT"
-echo "IMPORTANT: inspect semantic expectations and human/JSON/Markdown parity manually before claiming acceptance."
+
+# Verify the opposite direction and a terminal gateway node in the same
+# pinned REAL repository, with independent controlled commits.
+for SERVICE in orders gateway; do
+  git reset --hard "$BASE" >/dev/null
+  printf '\n# impactctl validation: %s-only controlled change\n' "$SERVICE" >> "services/$SERVICE/app.py"
+  git add "services/$SERVICE/app.py"
+  git -c user.name=impactctl-validation -c user.email=validation@example.invalid commit -qm "validation: controlled $SERVICE source change"
+  CASE_HEAD="$(git rev-parse HEAD)"
+  "$OUT/impactctl" pr --base "$BASE" --head "$CASE_HEAD" --json > "$OUT/$SERVICE.json"
+  "$OUT/impactctl" pr --base "$BASE" --head "$CASE_HEAD" --json > "$OUT/$SERVICE-rerun.json"
+  cmp "$OUT/$SERVICE.json" "$OUT/$SERVICE-rerun.json"
+  python3 - "$OUT/$SERVICE.json" "$SERVICE" <<'PY'
+import json,sys
+r=json.load(open(sys.argv[1]))
+service=sys.argv[2]
+def names(items):
+    assert isinstance(items,list), type(items)
+    return {x if isinstance(x,str) else x.get("Name",x.get("name")) for x in items}
+expected={"orders":{"gateway"},"gateway":set()}
+direct=names(r["ChangedServices"])
+downstream=names(r["DownstreamServices"])
+assert direct=={service}, (service,direct)
+assert downstream==expected[service], (service,downstream)
+print("PASS:",service,"direct",sorted(direct),"downstream",sorted(downstream))
+PY
+done
+
+# Legacy no-config regression: same pinned repository without a service map.
+# Do not silently claim byte-for-byte v0.1 parity; require explicit no-service
+# behavior, and keep the original v0.1 regression suite as a separate gate.
+git reset --hard a9df3b8b62b0e9e569963989b8ae3c4e1798b150 >/dev/null
+printf '\n# impactctl validation: legacy no-config change\n' >> services/catalog/app.py
+git add services/catalog/app.py
+git -c user.name=impactctl-validation -c user.email=validation@example.invalid commit -qm 'validation: legacy no-config catalog change'
+LEGACY_HEAD="$(git rev-parse HEAD)"
+"$OUT/impactctl" pr --base a9df3b8b62b0e9e569963989b8ae3c4e1798b150 --head "$LEGACY_HEAD" --json > "$OUT/no-config.json"
+python3 - "$OUT/no-config.json" <<'PY'
+import json,sys
+r=json.load(open(sys.argv[1]))
+assert not r.get("ChangedServices"), r.get("ChangedServices")
+assert not r.get("DownstreamServices"), r.get("DownstreamServices")
+assert r.get("Files"), "legacy diff should still be detected"
+print("PASS: no-config repository analysis preserved, no invented service graph")
+PY
+echo "PASS: catalog/orders/gateway/no-config cases; inspect artifacts for output parity."
+
