@@ -7,7 +7,7 @@
 
 `impactctl` is a deterministic change-impact CLI for pull requests. It turns a Git diff into a compact risk signal by inspecting technical contracts, database migrations, deployment/configuration changes, CI/CD files and repository ownership.
 
-> `v0.1.0` is the first public release. Current `v0.2` development extends the same explainable model from repository-level change signals into explicit service relationships and downstream system impact.
+> `v0.2.0` is the current public release. It extends the original repository-level change signals into explicit service relationships, API/event-contract evidence and deterministic downstream system impact.
 
 ## Why
 
@@ -55,7 +55,7 @@ Suggested review
 Install the released Go CLI:
 
 ```bash
-go install github.com/yigitcan-ozturk/impactctl/cmd/impactctl@v0.1.0
+go install github.com/yigitcan-ozturk/impactctl/cmd/impactctl@v0.2.0
 ```
 
 Or download a prebuilt binary for Linux, macOS or Windows from the [latest GitHub release](https://github.com/yigitcan-ozturk/impactctl/releases/latest). Release archives include SHA-256 checksums.
@@ -81,9 +81,9 @@ For a pull-request comment payload:
 ./impactctl pr --base main --head HEAD --markdown
 ```
 
-## v0.2 service-impact preview (unreleased)
+## v0.2 service impact
 
-The current development branch supports an **optional, explicit** `.impactctl.yml` service map. This enables path-to-service matching, configured OpenAPI provider/consumer impact, conservative AsyncAPI evidence and deterministic downstream dependency paths. It does not discover runtime dependencies automatically. Without the file, the CLI continues its existing repository-level analysis.
+The v0.2.0 release supports an **optional, explicit** `.impactctl.yml` service map. This enables path-to-service matching, configured OpenAPI provider/consumer impact, conservative AsyncAPI evidence and deterministic downstream dependency paths. It does not discover runtime dependencies automatically. Without the file, the CLI continues its existing repository-level analysis.
 
 Minimal example:
 
@@ -107,7 +107,7 @@ Run `impactctl pr --base main --head HEAD` as before. Use `--json` or `--markdow
 
 **Upgrade path:** Existing v0.1 users need not add configuration. To enable v0.2 service impact, explicitly document service paths and real dependency edges, review the resulting impact against repository code, and add optional contract metadata as appropriate. Do not treat absent edges as discovered facts. The optional `oasdiff` adapter is deferred beyond v0.2; no network service is required for the core CLI.
 
-The [pinned external-repository validation](docs/validation/V0.2_EXTERNAL_CANDIDATE.md) passed controlled catalog, orders, gateway and no-config scenarios in CI. This is reproducible self-run dogfood evidence, **not** an independent practitioner endorsement. The public install command above intentionally remains pinned to released v0.1.0 until a v0.2.0 release is published.
+The [pinned external-repository validation](docs/validation/V0.2_EXTERNAL_CANDIDATE.md) passed controlled catalog, orders, gateway and no-config scenarios in CI. This is reproducible self-run dogfood evidence, **not** an independent practitioner endorsement. The public install command above is pinned to the released v0.2.0 baseline.
 
 ## Experimental: SAP landscape impact
 
@@ -199,9 +199,9 @@ Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the issu
 
 ## Status
 
-`impactctl v0.1.0` is publicly released and being built in the open. The first milestone is a small, trusted CLI that developers can run on any repository in seconds.
+`impactctl v0.2.0` is publicly released and being built in the open. The current baseline combines repository-level change signals with explicit service relationships and deterministic downstream impact while remaining local-first and explainable.
 
-The PR comment workflow was live-validated on the repository's own v0.1 integration pull request before release. Release packaging, version injection and checksum generation are also covered by CI smoke tests.
+The PR comment workflow was live-validated on the repository's own integration path. Release packaging, version injection and checksum generation are covered by CI smoke tests.
 
 Experimental enterprise adapters remain additive and do not change the released v0.1 repository-impact contract.
 
