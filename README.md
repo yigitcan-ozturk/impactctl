@@ -9,6 +9,17 @@
 
 > `v0.2.0` is the current public release. It extends the original repository-level change signals into explicit service relationships, API/event-contract evidence and deterministic downstream system impact.
 
+## Proof at a glance
+
+| Signal | Evidence |
+| --- | --- |
+| **Current release** | **v0.2.0** |
+| **Core model** | Deterministic, local-first change-impact analysis |
+| **System context** | Explicit service maps, API/event contracts and downstream dependency paths |
+| **Validation** | Pinned external-repository candidate with controlled catalog, orders, gateway and no-config scenarios |
+| **CI integration** | Live-validated GitHub PR comment workflow |
+| **Release engineering** | Cross-platform binaries, version injection, checksums and CI smoke coverage |
+
 ## Why
 
 A small code diff can have a large system impact. Reviewers often see the changed lines but miss the surrounding blast radius: API contracts, migrations, deployment files, runtime configuration and ownership boundaries.
@@ -38,7 +49,7 @@ Suggested review
 → @procurement-team
 ```
 
-## v0.1 signals
+## Released v0.2 capabilities
 
 - Git diff scope
 - OpenAPI / Swagger contract changes
@@ -109,7 +120,7 @@ Run `impactctl pr --base main --head HEAD` as before. Use `--json` or `--markdow
 
 The [pinned external-repository validation](docs/validation/V0.2_EXTERNAL_CANDIDATE.md) passed controlled catalog, orders, gateway and no-config scenarios in CI. This is reproducible self-run dogfood evidence, **not** an independent practitioner endorsement. The public install command above is pinned to the released v0.2.0 baseline.
 
-## Experimental: SAP landscape impact
+## Experimental beyond v0.2: SAP landscape impact
 
 `impactctl` now includes an experimental, local-first SAP/enterprise landscape spike that asks a different question:
 
@@ -203,7 +214,7 @@ Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the issu
 
 The PR comment workflow was live-validated on the repository's own integration path. Release packaging, version injection and checksum generation are covered by CI smoke tests.
 
-Experimental enterprise adapters remain additive and do not change the released v0.1 repository-impact contract.
+Experimental enterprise adapters remain additive and do not change the released v0.2 baseline.
 
 Contributions, edge cases and real-world examples are welcome.
 
