@@ -93,3 +93,13 @@ See [`V0.2_EXECUTION.md`](V0.2_EXECUTION.md) for the engineering sequence and re
 ## Snapshot rule
 
 When a new snapshot is taken, append a dated section rather than rewriting the baseline. Record both the absolute values and the delta from the previous snapshot.
+
+## v0.2 public validation call — September 2026
+
+The v0.2.0 baseline is released. The next milestone is independent use, not another feature-count target.
+
+We are looking for maintainers, platform engineers, SRE/DevEx teams and service owners willing to run `impactctl` on a real or sanitized pull request. Useful trials include monorepos, service maps, OpenAPI/AsyncAPI contracts, CODEOWNERS boundaries and declared downstream dependencies.
+
+A useful report needs only four things: repository/stack context, the changed paths, expected review scope, and actual `impactctl` output. Sanitized reproductions are welcome. False positives and false negatives are equally valuable product evidence.
+
+Start in the public validation issue in this repository or open a focused issue with a reproducible example.
