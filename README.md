@@ -16,7 +16,7 @@
 | **Current release** | **v0.2.0** |
 | **Core model** | Deterministic, local-first change-impact analysis |
 | **System context** | Explicit service maps, API/event contracts and downstream dependency paths |
-| **Validation** | Pinned external-repository candidate with controlled catalog, orders, gateway and no-config scenarios |
+| **Real-repository validation** | [Online Boutique replay](docs/validation/online-boutique.md) — PASS on a pinned `checkoutservice` dependency change with deterministic downstream paths to `frontend` and `loadgenerator` |
 | **CI integration** | Live-validated GitHub PR comment workflow |
 | **Release engineering** | Cross-platform binaries, version injection, checksums and CI smoke coverage |
 
@@ -118,7 +118,7 @@ Run `impactctl pr --base main --head HEAD` as before. Use `--json` or `--markdow
 
 **Upgrade path:** Existing v0.1 users need not add configuration. To enable v0.2 service impact, explicitly document service paths and real dependency edges, review the resulting impact against repository code, and add optional contract metadata as appropriate. Do not treat absent edges as discovered facts. The optional `oasdiff` adapter is deferred beyond v0.2; no network service is required for the core CLI.
 
-The [pinned external-repository validation](docs/validation/V0.2_EXTERNAL_CANDIDATE.md) passed controlled catalog, orders, gateway and no-config scenarios in CI. This is reproducible self-run dogfood evidence, **not** an independent practitioner endorsement. The public install command above is pinned to the released v0.2.0 baseline.
+The [Online Boutique real-repository validation](docs/validation/online-boutique.md) passed a pinned change in `GoogleCloudPlatform/microservices-demo`: `checkoutservice` was identified as the changed service, with deterministic downstream paths to `frontend` and `loadgenerator` from explicitly evidenced relationships. The replay is also published as [machine-readable evidence](docs/validation/online-boutique.json). This remains reproducible project-run evidence, **not** an independent practitioner endorsement. Independent or sanitized external results are being collected in [Public Validation #33](https://github.com/yigitcan-ozturk/impactctl/issues/33). The public install command above is pinned to the released v0.2.0 baseline.
 
 ## Experimental beyond v0.2: SAP landscape impact
 
@@ -155,7 +155,7 @@ Useful feedback includes:
 - a repository pattern that the current service-map model cannot express cleanly;
 - a PR where the suggested review scope changed a real review decision.
 
-Reproducible examples are especially valuable. Open an issue with the repository structure, relevant changed paths, expected result and actual `impactctl` output. Sanitized or synthetic reproductions are welcome when the original repository cannot be shared.
+Reproducible examples are especially valuable. Post results directly to [Public Validation #33](https://github.com/yigitcan-ozturk/impactctl/issues/33) using the provided comparison template. Sanitized or synthetic reproductions are welcome when the original repository cannot be shared.
 
 ## GitHub pull-request comments
 
