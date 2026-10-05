@@ -25,6 +25,8 @@ type Fact struct {
 	Subject  string       `json:"subject"`
 	Object   string       `json:"object"`
 	Direct   bool         `json:"direct"`
+	Kind     string       `json:"dependency_kind,omitempty"`
+	Optional bool         `json:"optional"`
 	Evidence FactEvidence `json:"evidence"`
 }
 
@@ -43,6 +45,8 @@ type dependency struct {
 	PackageName string `json:"package_name"`
 	Ecosystem   string `json:"ecosystem"`
 	Direct      bool   `json:"direct"`
+	Kind        string `json:"kind"`
+	Optional    bool   `json:"optional"`
 }
 
 type Client struct {
@@ -110,6 +114,8 @@ func (c *Client) Lookup(ctx context.Context, repository string) (Evidence, error
 				Subject: repository,
 				Object: object,
 				Direct: true,
+				Kind: d.Kind,
+				Optional: d.Optional,
 				Evidence: FactEvidence{Manifest: m.Filepath, SourceURL: m.RepositoryLink},
 			})
 		}
