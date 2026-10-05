@@ -1,0 +1,85 @@
+{
+  "schema_version": "1",
+  "project": "impactctl",
+  "validation_id": "online-boutique-2026-08-31",
+  "validation_type": "real-repository-replay",
+  "repository": "GoogleCloudPlatform/microservices-demo",
+  "base_sha": "a1377642498628fcb53e9e0f608820a84badff0d",
+  "head_sha": "25d39dc9a6f84b97b3d84484c9fe392e04e81325",
+  "selected_change": {
+    "files": [
+      "src/checkoutservice/go.mod",
+      "src/checkoutservice/go.sum"
+    ],
+    "description": "gRPC dependency update in checkoutservice"
+  },
+  "evidence_boundary": {
+    "relationships": [
+      {
+        "from": "frontend",
+        "depends_on": "checkoutservice",
+        "basis": "frontend configures and opens a gRPC connection through CHECKOUT_SERVICE_ADDR"
+      },
+      {
+        "from": "loadgenerator",
+        "depends_on": "frontend",
+        "basis": "repository documentation states loadgenerator continuously sends shopping-flow requests to frontend"
+      }
+    ],
+    "undeclared_relationships_inferred": false
+  },
+  "expected": {
+    "changed_services": [
+      "checkoutservice"
+    ],
+    "downstream_services": [
+      {
+        "name": "frontend",
+        "path": [
+          "checkoutservice",
+          "frontend"
+        ]
+      },
+      {
+        "name": "loadgenerator",
+        "path": [
+          "checkoutservice",
+          "frontend",
+          "loadgenerator"
+        ]
+      }
+    ]
+  },
+  "observed": {
+    "changed_services": [
+      "checkoutservice"
+    ],
+    "downstream_services": [
+      {
+        "name": "frontend",
+        "path": [
+          "checkoutservice",
+          "frontend"
+        ]
+      },
+      {
+        "name": "loadgenerator",
+        "path": [
+          "checkoutservice",
+          "frontend",
+          "loadgenerator"
+        ]
+      }
+    ],
+    "false_positive_service_relationships": 0,
+    "false_negative_service_relationships": 0
+  },
+  "result": "PASS",
+  "reproducibility": {
+    "workflow": ".github/workflows/real-repo-validation.yml",
+    "script": "scripts/validate-online-boutique.sh",
+    "documentation": "docs/validation/online-boutique.md",
+    "pull_request": "https://github.com/yigitcan-ozturk/impactctl/pull/25"
+  },
+  "scope_note": "Project-run reproducible evidence; not an independent practitioner endorsement."
+}
