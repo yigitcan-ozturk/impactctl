@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"context"
 	"os"
 	"strings"
 
+	"github.com/yigitcan-ozturk/impactctl/internal/ecosystems"
 	"github.com/yigitcan-ozturk/impactctl/internal/impact"
 	"github.com/yigitcan-ozturk/impactctl/internal/sapimpact"
 )
@@ -28,10 +30,38 @@ func main() {
 		runPR(os.Args[2:])
 	case "sap":
 		runSAP(os.Args[2:])
+	case "evidence":
+		runEvidence(os.Args[2:])
 	default:
 		usage()
 		os.Exit(2)
 	}
+}
+
+
+func runEvidence(args []string) {
+	if len(args) == 0 || args[0] != "ecosystems" {
+		fmt.Fprintln(os.Stderr, "impactctl: evidence requires subcommand ecosystems")
+		os.Exit(2)
+	}
+	fs := flag.NewFlagSet("evidence ecosystems", flag.ExitOnError)
+	repository := fs.String("repo", "", "GitHub repository in owner/name form")
+	jsonOut := fs.Bool("json", false, "emit JSON")
+	_ = fs.Parse(args[1:])
+	if strings.TrimSpace(*repository) == "" {
+		fmt.Fprintln(os.Stderr, "impactctl: evidence ecosystems requires --repo owner/name")
+		os.Exit(2)
+	}
+	if !*jsonOut {
+		fmt.Fprintln(os.Stderr, "impactctl: experimental ecosystems evidence currently requires --json")
+		os.Exit(2)
+	}
+	evidence, err := ecosystems.NewClient().Lookup(context.Background(), *repository)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "impactctl:", err)
+		os.Exit(1)
+	}
+	writeJSON(evidence)
 }
 
 func runPR(args []string) {
@@ -97,7 +127,7 @@ func writeJSON(value any) {
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "impactctl — know what your change can break before you merge it")
-	fmt.Fprintln(os.Stderr, "\nUsage:\n  impactctl pr [--base main] [--head HEAD] [--json | --markdown]\n  impactctl sap --manifest <file> [--json]\n  impactctl version")
+	fmt.Fprintln(os.Stderr, "\nUsage:\n  impactctl pr [--base main] [--head HEAD] [--json | --markdown]\n  impactctl sap --manifest <file> [--json]\n  impactctl evidence ecosystems --repo owner/repo --json\n  impactctl version")
 }
 
 func printReport(r impact.Report) {
